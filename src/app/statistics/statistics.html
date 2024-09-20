@@ -1,0 +1,25 @@
+<ion-app>
+
+    <ion-header>
+        <ion-toolbar>
+            <ion-buttons slot="start">
+                <ion-menu-button></ion-menu-button>
+            </ion-buttons>
+            <ion-title>
+                Statistics
+            </ion-title>
+        </ion-toolbar>
+
+    </ion-header>
+
+    <ion-content>
+
+
+        <div>
+            <canvas baseChart [datasets]="barChartData" [labels]="barChartLabels" [options]="barChartOptions"
+                [legend]="barChartLegend" [chartType]="barChartType">
+            </canvas>
+        </div>
+
+    </ion-content>
+</ion-app>

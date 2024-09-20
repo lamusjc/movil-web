@@ -1,0 +1,186 @@
+<ion-app>
+  <div class="ion-page">
+    <ion-header>
+      <ion-toolbar>
+        <ion-buttons slot="start">
+          <ion-menu-button></ion-menu-button>
+        </ion-buttons>
+        <ion-title>Notes</ion-title>
+      </ion-toolbar>
+    </ion-header>
+    <ion-content class="ion-padding" [formGroup]="form">
+      <h3>Create Note</h3>
+      <div class="custom-card">
+        <ion-item text-wrap *ngIf="form.get('note_file').value !== ''">
+          <ion-thumbnail slot="start">
+            <ion-img [src]="form.get('note_file').value"></ion-img>
+          </ion-thumbnail>
+          <ion-label>
+            {{ image.name }}
+          </ion-label>
+          <ion-button slot="end" fill="clear" (click)="form.get('note_file').setValue('')">
+            <ion-icon color="secondary" slot="icon-only" name="trash"></ion-icon>
+          </ion-button>
+        </ion-item>
+        <!-- Textarea in an item with a floating label -->
+        <ion-item class="custom-item">
+          <ion-label position="floating">Title </ion-label>
+          <div style="text-align: right;">
+            <ion-icon name="bookmark-outline" *ngIf="!form.get('note_favorite').value"
+              (click)="form.get('note_favorite').setValue(!form.get('note_favorite').value)" style="cursor: pointer;">
+            </ion-icon>
+            <ion-icon name="bookmark" *ngIf="form.get('note_favorite').value"
+              (click)="form.get('note_favorite').setValue(!form.get('note_favorite').value)" style="cursor: pointer;">
+            </ion-icon>
+
+          </div>
+          <ion-textarea formControlName="note_title"></ion-textarea>
+
+        </ion-item>
+
+        <ion-item class="custom-item">
+          <ion-label position="floating">Description</ion-label>
+          <ion-textarea rows="3" formControlName="note_description"></ion-textarea>
+        </ion-item>
+        <!-- <ion-button expand="block" (click)="openMenu()">Open Menu</ion-button> -->
+        <div>
+          <ion-button expand="block" color="light" (click)="uploadImage(this.form)">
+            <ion-icon name="image-outline"></ion-icon>
+          </ion-button>
+          <div style="text-align: right;">
+            <ion-button expand="block" color="light" (click)="createNote()" [disabled]="form.invalid || !isReady">Create
+              Note
+            </ion-button>
+          </div>
+        </div>
+
+      </div>
+    </ion-content>
+    <ion-content class="ion-padding" *ngIf="notes_favorite.length > 0 || notes.length > 0">
+      <div name="notes_favorite" *ngIf="notes_favorite.length > 0">
+        <h3>Note's Favorite List</h3>
+        <ion-searchbar showCancelButton="always" (ionClear)="applyFilter('', true);"
+          (keyup)="applyFilter($event.target.value, true);"></ion-searchbar>
+        <ion-grid>
+          <ion-row cdkDropList class="example-list" (cdkDropListDropped)="dropFavorite($event)">
+            <ion-col class="custom-card example-box"
+              *ngFor="let arr of form.controls['note_edit_favorite'].controls; let i = index;" size="12" cdkDrag>
+              <ion-item text-wrap *ngIf="arr.value.note_file">
+                <ion-thumbnail slot="start">
+                  <ion-img [src]="arr.value.note_file"></ion-img>
+                </ion-thumbnail>
+                <ion-label>
+                  Image
+                </ion-label>
+                <ion-button slot="end" fill="clear" (click)="arr.get('note_file').setValue('')">
+                  <ion-icon color="secondary" slot="icon-only" name="trash"></ion-icon>
+                </ion-button>
+              </ion-item>
+              <!-- Textarea in an item with a floating label -->
+              <ion-item class="custom-item">
+                <ion-label position="floating">Title </ion-label>
+                <div style="text-align: right;">
+                  <ion-icon name="bookmark-outline" *ngIf="!arr.value.note_favorite"
+                    (click)="arr.get('note_favorite').setValue(!arr.get('note_favorite').value)">
+                  </ion-icon>
+                  <ion-icon name="bookmark" *ngIf="arr.value.note_favorite"
+                    (click)="arr.get('note_favorite').setValue(!arr.get('note_favorite').value)">
+                  </ion-icon>
+
+                </div>
+                <ion-textarea [formControl]="arr.get('note_title')" [value]="arr.value.note_title"></ion-textarea>
+
+              </ion-item>
+              <ion-item class="custom-item">
+                <ion-label position="floating">Description</ion-label>
+                <ion-textarea [formControl]="arr.get('note_description')" rows="3" [value]="arr.value.note_description">
+                </ion-textarea>
+              </ion-item>
+              <!-- <ion-button expand="block" (click)="openMenu()">Open Menu</ion-button> -->
+              <div>
+                <ion-button expand="block" color="light" (click)="uploadImage(arr)">
+                  <ion-icon name="image-outline"></ion-icon>
+                </ion-button>
+
+                <ion-button expand="block" color="light" (click)="modifyNote(arr)">
+                  <ion-icon name="pencil-outline"></ion-icon>
+                </ion-button>
+
+                <ion-button expand="block" color="light" (click)="deleteNote(arr)">
+                  <ion-icon name="trash-bin-outline"></ion-icon>
+                </ion-button>
+                <ion-button expand="block" color="light" (click)="reminderNote(arr)">
+                  <ion-icon name="alarm-outline"></ion-icon>
+                </ion-button>
+              </div>
+              <br>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+      </div>
+      <div name="notes" *ngIf="notes.length > 0">
+        <h3>Note's List</h3>
+        <ion-searchbar showCancelButton="always" (ionClear)="applyFilter('', false);"
+          (keyup)="applyFilter($event.target.value, false);"></ion-searchbar>
+        <ion-grid>
+          <ion-row cdkDropList class="example-list" (cdkDropListDropped)="drop($event)">
+            <ion-col class="custom-card example-box"
+              *ngFor="let arr of form.controls['note_edit'].controls; let i = index;" size="12" cdkDrag>
+              <ion-item text-wrap *ngIf="arr.value.note_file">
+                <ion-thumbnail slot="start">
+                  <ion-img [src]="arr.value.note_file"></ion-img>
+                </ion-thumbnail>
+                <ion-label>
+                  Image
+                </ion-label>
+                <ion-button slot="end" fill="clear" (click)="arr.get('note_file').setValue('')">
+                  <ion-icon color="secondary" slot="icon-only" name="trash"></ion-icon>
+                </ion-button>
+              </ion-item>
+              <!-- Textarea in an item with a floating label -->
+              <ion-item class="custom-item">
+                <ion-label position="floating">Title </ion-label>
+                <div style="text-align: right;">
+                  <ion-icon name="bookmark-outline" *ngIf="!arr.value.note_favorite"
+                    (click)="arr.get('note_favorite').setValue(!arr.get('note_favorite').value)">
+                  </ion-icon>
+                  <ion-icon name="bookmark" *ngIf="arr.value.note_favorite"
+                    (click)="arr.get('note_favorite').setValue(!arr.get('note_favorite').value)">
+                  </ion-icon>
+
+                </div>
+                <ion-textarea [formControl]="arr.get('note_title')" [value]="arr.value.note_title"></ion-textarea>
+
+              </ion-item>
+              <ion-item class="custom-item">
+                <ion-label position="floating">Description</ion-label>
+                <ion-textarea [formControl]="arr.get('note_description')" rows="3" [value]="arr.value.note_description">
+                </ion-textarea>
+              </ion-item>
+              <!-- <ion-button expand="block" (click)="openMenu()">Open Menu</ion-button> -->
+              <div>
+                <ion-button expand="block" color="light" (click)="uploadImage(arr)">
+                  <ion-icon name="image-outline"></ion-icon>
+                </ion-button>
+
+                <ion-button expand="block" color="light" (click)="modifyNote(arr)">
+                  <ion-icon name="pencil-outline"></ion-icon>
+                </ion-button>
+
+                <ion-button expand="block" color="light" (click)="deleteNote(arr)">
+                  <ion-icon name="trash-bin-outline"></ion-icon>
+                </ion-button>
+
+                <ion-button expand="block" color="light" (click)="reminderNote(arr)">
+                  <ion-icon name="alarm-outline"></ion-icon>
+                </ion-button>
+              </div>
+              <br>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+      </div>
+    </ion-content>
+  </div>
+</ion-app>
